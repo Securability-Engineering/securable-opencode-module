@@ -17,20 +17,19 @@ This module augments OpenCode with two capabilities:
 # Clone the repository
 git clone https://github.com/Xcaciv/securable-claude-plugin.git
 
-# The OpenCode module is in the opencode-module/ directory
-cd securable-claude-plugin/opencode-module
+cd securable-claude-plugin/
 ```
 
 ### 2. Copy into your project
 
-Copy or symlink the `opencode-module/` directory into your project root, or merge the `opencode.json` configuration into your existing OpenCode config:
+Copy or symlink the directory into your project root, or merge the `opencode.json` configuration into your existing OpenCode config:
 
 ```bash
 # Option A: Copy the entire module into your project
-cp -r opencode-module/ /path/to/your/project/.securable/
+cp -r ./ /path/to/your/project/.securable/
 
 # Option B: Symlink
-ln -s /path/to/opencode-module /path/to/your/project/.securable
+ln -s /path/to/securable-claude-plugin /path/to/your/project/.securable
 ```
 
 ### 3. Configure OpenCode
@@ -158,7 +157,7 @@ Each attribute is scored 0–10. Pillar scores are weighted averages. The overal
 ## Project Structure
 
 ```
-opencode-module/
+securable-claude-plugin/
 ├── opencode.json                        # OpenCode configuration (MCP server + instructions)
 ├── instructions.md                      # System instructions loaded by OpenCode
 ├── tools/
@@ -223,10 +222,10 @@ opencode-module/
 
 ## References
 
-- [FIASSE RFC](https://github.com/Xcaciv/securable_software_engineering/blob/main/docs/FIASSE-RFC.md) — Framework for Integrating Application Security into Software Engineering
+- [FIASSE](https://github.com/Xcaciv/securable_software_engineering/blob/main/docs/secureable_framework.md) — Framework for Integrating Application Security into Software Engineering
 - [Xcaciv/securable_software_engineering](https://github.com/Xcaciv/securable_software_engineering) — Source repository
 - [OpenCode](https://opencode.ai) — Terminal-based AI coding assistant
 
 ## License
 
-CC-BY-4.0 — See [LICENSE](../LICENSE)
+CC-BY-4.0 — See [LICENSE](LICENSE)
