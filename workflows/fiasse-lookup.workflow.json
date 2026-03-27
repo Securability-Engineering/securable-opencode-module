@@ -1,0 +1,30 @@
+{
+  "id": "fiasse-lookup",
+  "description": "Convert /fiasse-lookup behavior into OpenCode workflow steps",
+  "steps": [
+    {
+      "id": "require-topic",
+      "type": "require_input",
+      "path": "input.topic",
+      "prompt": "Provide a FIASSE/SSEM topic or section id (for example: integrity or S3.2.3)."
+    },
+    {
+      "id": "call-fiasse-lookup",
+      "type": "tool",
+      "toolId": "fiasse_lookup",
+      "input": {
+        "topic": "{{input.topic}}",
+        "maxSections": "{{input.maxSections}}"
+      }
+    },
+    {
+      "id": "emit-result",
+      "type": "emit",
+      "output": {
+        "topic": "$steps.call-fiasse-lookup.topic",
+        "matches": "$steps.call-fiasse-lookup.matches",
+        "guidance": "$steps.call-fiasse-lookup.guidance"
+      }
+    }
+  ]
+}

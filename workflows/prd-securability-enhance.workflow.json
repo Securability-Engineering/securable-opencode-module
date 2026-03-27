@@ -1,0 +1,40 @@
+{
+  "id": "prd-securability-enhance",
+  "description": "Convert PRD securability enhancement play into OpenCode workflow",
+  "steps": [
+    {
+      "id": "require-prd-path",
+      "type": "require_input",
+      "path": "input.prdPath",
+      "prompt": "Provide the PRD file path in input.prdPath."
+    },
+    {
+      "id": "call-prd-enhancement",
+      "type": "tool",
+      "toolId": "prd_securability_enhance",
+      "input": {
+        "workspaceRoot": "{{input.workspaceRoot}}",
+        "prdPath": "{{input.prdPath}}",
+        "asvsLevel": "{{input.asvsLevel}}"
+      }
+    },
+    {
+      "id": "branch-enhancement-ok",
+      "type": "branch",
+      "path": "steps.call-prd-enhancement.ok",
+      "equals": true,
+      "onMismatch": "stop",
+      "reason": "PRD enhancement failed. Verify prdPath and ASVS level."
+    },
+    {
+      "id": "emit-enhanced-prd",
+      "type": "emit",
+      "output": {
+        "prdPath": "$steps.call-prd-enhancement.prdPath",
+        "asvsLevel": "$steps.call-prd-enhancement.asvsLevel",
+        "featuresDetected": "$steps.call-prd-enhancement.featuresDetected",
+        "enhancedPrd": "$steps.call-prd-enhancement.enhancedPrd"
+      }
+    }
+  ]
+}

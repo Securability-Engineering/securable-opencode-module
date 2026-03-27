@@ -1,231 +1,146 @@
-# Securable Engineering — OpenCode Module
+# Securable OpenCode Module
 
-An OpenCode-compatible module for secure code generation and securability analysis using the FIASSE/SSEM framework. Converted from the [securable-claude-plugin](https://github.com/Xcaciv/securable-claude-plugin).
+OpenCode-compatible conversion of the original Claude Code plugin in this repository.
 
-## Overview
+This module preserves the original capabilities:
+- Securability engineering review (language-aware FIASSE/SSEM scoring workflow)
+- Securable code generation wrapper (constraint-driven generation contract)
+- PRD securability enhancement (requirement-level ASVS + SSEM + FIASSE annotations)
+- FIASSE reference lookup by topic
 
-This module augments OpenCode with two capabilities:
+## Module Layout
 
-1. **Securability Engineering Review** — Analyze existing code for securable qualities using the nine SSEM attributes across three pillars (Maintainability, Trustworthiness, Reliability), producing scored assessments with actionable findings.
-2. **Securability Engineering Code Generation** — Generate new code that embodies securable qualities by default, applying FIASSE principles as engineering constraints.
-
-## Installation
-
-### 1. Clone or copy the module
-
-```bash
-# Clone the repository
-git clone https://github.com/Xcaciv/securable-claude-plugin.git
-
-cd securable-claude-plugin/
+```text
+opencode-module/
+  config.json
+  tools/
+    fiasse_lookup.js
+    securability_review.js
+    secure_generate.js
+    prd_securability_enhance.js
+    lib/
+      common.js
+  workflows/
+    fiasse-lookup.workflow.json
+    securability-review.workflow.json
+    secure-generate.workflow.json
+    prd-securability-enhance.workflow.json
+  scripts/
+    run-workflow.js
+  README.md
 ```
 
-### 2. Copy into your project
+## Install
 
-Copy or symlink the directory into your project root, or merge the `opencode.json` configuration into your existing OpenCode config:
+1. Ensure Node.js 18+ is available.
+2. Keep this module in the same repository root so it can read `data/fiasse` and `data/asvs`.
+3. No external dependencies are required.
 
-```bash
-# Option A: Copy the entire module into your project
-cp -r ./ /path/to/your/project/.securable/
+## Run Workflows
 
-# Option B: Symlink
-ln -s /path/to/securable-claude-plugin /path/to/your/project/.securable
-```
-
-### 3. Configure OpenCode
-
-Merge the contents of `opencode.json` into your project's OpenCode configuration. If you don't have an existing config, copy it directly:
+All workflows are executed via:
 
 ```bash
-cp opencode.json /path/to/your/project/opencode.json
+node opencode-module/scripts/run-workflow.js <workflow-id> <input-json-file>
 ```
 
-If you already have an `opencode.json`, add the `securable` MCP server entry to your existing `mcpServers` section:
+Workflow IDs:
+- `fiasse-lookup`
+- `securability-review`
+- `secure-generate`
+- `prd-securability-enhance`
 
+### Example Inputs
+
+`lookup-input.json`
 ```json
 {
-  "mcpServers": {
-    "securable": {
-      "command": "python",
-      "args": ["./.securable/tools/mcp_server.py"],
-      "env": {
-        "SECURABLE_DATA_DIR": "./.securable/data",
-        "SECURABLE_TEMPLATES_DIR": "./.securable/templates",
-        "SECURABLE_WORKFLOWS_DIR": "./.securable/workflows"
-      }
-    }
-  }
+  "topic": "integrity",
+  "maxSections": 3
 }
 ```
 
-Also add the instructions reference:
-
+`review-input.json`
 ```json
 {
-  "instructions": "./.securable/instructions.md"
+  "workspaceRoot": ".",
+  "targetPath": "skills"
 }
 ```
 
-### 4. Verify Python is available
+Review output includes `languageBreakdown` with per-language function/class and control-signal hints.
 
-The MCP server requires Python 3.10+. No external packages are needed — the server uses only the Python standard library.
+`generate-input.json`
+```json
+{
+  "request": "Create a user registration API endpoint",
+  "language": "TypeScript",
+  "framework": "Express"
+}
+```
+
+`prd-input.json`
+```json
+{
+  "workspaceRoot": ".",
+  "prdPath": "examples/prd-enhancement/input-prd.md",
+  "asvsLevel": 2,
+  "maxRequirementsPerFeature": 6
+}
+```
+
+PRD enhancement output now includes concrete ASVS requirement IDs (for example `V2.1.1`) per detected feature.
+
+## Call Tools Directly
+
+Each tool accepts JSON from stdin and emits JSON to stdout:
 
 ```bash
-python --version  # Should be 3.10+
+echo {"topic":"transparency"} | node opencode-module/tools/fiasse_lookup.js
 ```
 
-## Tools
-
-### `securability_review`
-
-Loads the complete SSEM securability engineering review workflow for analyzing code.
-
-**Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `target` | string | No | Description of the code/system being reviewed |
-| `focus` | string | No | Focus area: `maintainability`, `trustworthiness`, `reliability`, or specific attributes |
-
-**Example invocation:**
-> "Run a securability review on the authentication module, focusing on trustworthiness"
-
-**Returns:** The full review workflow procedure, scoring framework, finding template, report template, and relevant FIASSE reference sections.
-
-### `secure_generate`
-
-Loads FIASSE/SSEM code generation constraints for producing inherently securable code.
-
-**Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `feature` | string | No | Description of the feature/code to generate |
-| `language` | string | No | Target programming language/framework |
-| `context` | string | No | Additional context (data sensitivity, exposure, system type) |
-
-**Example invocation:**
-> "Generate a securable REST API endpoint for user registration in Python/FastAPI"
-
-**Returns:** SSEM attribute enforcement rules, trust boundary handling guidance, generation checklist, foundational principles, and relevant FIASSE/ASVS reference data.
-
-### `fiasse_lookup`
-
-Looks up FIASSE/SSEM/ASVS reference material by topic or section identifier.
-
-**Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | No | Search topic (e.g., "integrity", "trust boundary", "input validation") |
-| `section` | string | No | Specific section ID (e.g., `S3.2.1`, `V6.2`, `S6.4`) |
-
-**Example invocations:**
-> "Look up the FIASSE definition of integrity"
-> "Show me ASVS section V6.2 on password security"
-
-**Returns:** Matching FIASSE/SSEM/ASVS section content with metadata.
-
-## Workflows
-
-### Securability Engineering Review
-
-Located at `workflows/securability-engineering-review.md`, this is the complete step-by-step procedure for performing an SSEM securability assessment. The `securability_review` tool loads this automatically.
-
-**Steps:**
-1. Scope & Context
-2. SSEM Attribute Assessment — Maintainability (Analyzability, Modifiability, Testability)
-3. SSEM Attribute Assessment — Trustworthiness (Confidentiality, Accountability, Authenticity)
-4. SSEM Attribute Assessment — Reliability (Availability, Integrity, Resilience)
-5. Transparency Assessment
-6. Code-Level Threat Identification
-7. Dependency Securability
-8. Produce Findings (scored, with SSEM attribution)
-
-**Output:**
-- Part 1: SSEM Score Summary (overall score, pillar breakdowns)
-- Part 2: Detailed Findings per pillar
-- Part 3: 45-item Evaluation Checklist
-
-## SSEM Model
-
-| **Maintainability** | **Trustworthiness** | **Reliability** |
-|:---------------------|:--------------------:|----------------:|
-| Analyzability        | Confidentiality      | Availability    |
-| Modifiability        | Accountability       | Integrity       |
-| Testability          | Authenticity         | Resilience      |
-
-Each attribute is scored 0–10. Pillar scores are weighted averages. The overall SSEM score is the average of the three pillar scores.
-
-## Project Structure
-
-```
-securable-claude-plugin/
-├── opencode.json                        # OpenCode configuration (MCP server + instructions)
-├── instructions.md                      # System instructions loaded by OpenCode
-├── tools/
-│   └── mcp_server.py                   # MCP tool server (stdio JSON-RPC)
-├── workflows/
-│   └── securability-engineering-review.md  # Full review procedure
-├── data/
-│   ├── fiasse/                          # FIASSE RFC reference sections (S2.x–S8.x)
-│   │   ├── README.md
-│   │   ├── S2.1.md ... S8.2.md
-│   └── asvs/                            # OWASP ASVS 5.0 sections (V1.x–V17.x)
-│       ├── README.md
-│       ├── V1.1.md ... V17.3.md
-├── templates/
-│   ├── finding.md                       # Individual finding format
-│   └── report.md                        # Full assessment report format
-├── scripts/
-│   └── extract_fiasse_sections.py       # Utility to extract sections from FIASSE RFC
-└── README.md                            # This file
+```bash
+echo {"request":"Build a secure file upload handler","language":"Python"} | node opencode-module/tools/secure_generate.js
 ```
 
-## Mapping: Claude Code Plugin → OpenCode Module
+```bash
+echo {"workspaceRoot":".","targetPath":"."} | node opencode-module/tools/securability_review.js
+```
 
-| Claude Code Concept | OpenCode Equivalent | Location |
-|---------------------|---------------------|----------|
-| `CLAUDE.md` (entry point) | `instructions.md` (system instructions) | `instructions.md` |
-| Skills (`skills/*/SKILL.md`) | MCP tool definitions in server | `tools/mcp_server.py` |
-| Plays (`plays/code-analysis/*.md`) | Workflow documents | `workflows/` |
-| Slash commands (`/securability-review`) | MCP tool: `securability_review` | `tools/mcp_server.py` |
-| Slash commands (`/secure-generate`) | MCP tool: `secure_generate` | `tools/mcp_server.py` |
-| Slash commands (`/fiasse-lookup`) | MCP tool: `fiasse_lookup` | `tools/mcp_server.py` |
-| FIASSE data (`data/fiasse/`) | Same (copied) | `data/fiasse/` |
-| ASVS data (`data/asvs/`) | Same (copied) | `data/asvs/` |
-| Templates (`templates/`) | Same (copied) | `templates/` |
-| Claude-specific YAML frontmatter in skills | Tool `inputSchema` in MCP server | `tools/mcp_server.py` |
-| Claude Code extension manifest | `opencode.json` | `opencode.json` |
-| Anthropic message roles | Removed; standard MCP JSON-RPC protocol | `tools/mcp_server.py` |
+```bash
+echo {"workspaceRoot":".","prdPath":"examples/prd-enhancement/input-prd.md","asvsLevel":2} | node opencode-module/tools/prd_securability_enhance.js
+```
 
-## Architecture Notes
+## Claude Plugin to OpenCode Mapping
 
-### What Changed
+| Claude Artifact | OpenCode Artifact | Notes |
+| --- | --- | --- |
+| `skills/securability-engineering-review/SKILL.md` | `tools/securability_review.js` + `workflows/securability-review.workflow.json` | Skill logic converted to callable tool and workflow |
+| `skills/securability-engineering/SKILL.md` | `tools/secure_generate.js` + `workflows/secure-generate.workflow.json` | Generation constraints surfaced as generation contract |
+| `skills/prd-securability-enhancement/SKILL.md` | `tools/prd_securability_enhance.js` + `workflows/prd-securability-enhance.workflow.json` | Play logic converted to enhancement workflow |
+| `plays/code-analysis/securability-engineering-review.md` | `workflows/securability-review.workflow.json` | Multi-step review flow converted |
+| `plays/requirements-analysis/prd-fiasse-asvs-enhancement.md` | `workflows/prd-securability-enhance.workflow.json` | Feature-by-feature enhancement flow converted |
+| `.claude/commands/securability-review.md` | Command `securability-review` in `config.json` | Slash command translated to workflow command |
+| `.claude/commands/secure-generate.md` | Command `secure-generate` in `config.json` | Slash command translated to workflow command |
+| `.claude/commands/prd-securability-enhance.md` | Command `prd-securability-enhance` in `config.json` | Slash command translated to workflow command |
+| `.claude/commands/fiasse-lookup.md` | Command `fiasse-lookup` in `config.json` | Slash command translated to workflow command |
+| Claude/MCP tool protocol assumptions | `config.json` tool registry + local executable tool scripts | MCP binding removed |
+| Anthropic-specific role semantics | `agentMessageFormat` in `config.json` | Replaced with generic OpenCode JSON message roles |
 
-1. **Skills → MCP Tools**: The two Claude Code skills (`securability-engineering-review` and `securability-engineering`) are now exposed as MCP tools (`securability_review` and `secure_generate`) via a Python stdio server. The skill logic (constraints, checklists, enforcement rules) is embedded in the tool handlers.
+## Removed Claude-Specific Elements
 
-2. **Plays → Workflows**: The play document (`securability-engineering-review.md`) is preserved as-is in `workflows/` and loaded by the `securability_review` tool when invoked.
+- No Anthropic API usage.
+- No MCP server bindings.
+- No Claude extension manifest fields.
+- No Claude-only message role payloads.
 
-3. **Slash Commands → MCP Tools**: The three Claude Code slash commands are now MCP tools callable by OpenCode's agent loop.
+## Feature Gaps and Recommended Alternatives
 
-4. **System Prompt → Instructions**: `CLAUDE.md` is replaced by `instructions.md` with Claude-specific references removed and OpenCode-compatible framing.
+1. Exact MCP runtime parity is not possible without the target OpenCode host's proprietary runtime contracts.
+Alternative: use `config.json` + workflow runner here as an adapter layer, then bind host-specific adapters in your OpenCode runtime.
 
-5. **No Claude-Specific Dependencies**: The MCP server uses only Python standard library. No Anthropic SDK, no Claude-specific message formats.
+2. Full semantic code review requires language-aware parsers and dynamic analysis.
+Alternative: integrate AST analyzers and test runners as additional OpenCode tools, while keeping current SSEM workflow structure intact.
 
-### What's Preserved
-
-- All FIASSE/SSEM reference data (35 sections)
-- All OWASP ASVS 5.0 data (80 sections)
-- Full review workflow with scoring rubrics and checklists
-- Code generation constraints with SSEM attribute enforcement
-- Finding and report templates
-- FIASSE section extraction utility script
-- YAML frontmatter search for topic-based lookups
-
-## References
-
-- [FIASSE](https://github.com/Xcaciv/securable_software_engineering/blob/main/docs/secureable_framework.md) — Framework for Integrating Application Security into Software Engineering
-- [Xcaciv/securable_software_engineering](https://github.com/Xcaciv/securable_software_engineering) — Source repository
-- [OpenCode](https://opencode.ai) — Terminal-based AI coding assistant
-
-## License
-
-CC-BY-4.0 — See [LICENSE](LICENSE)
+3. Requirement-level ASVS mapping is heuristic in current converter tool.
+Alternative: add a dedicated parser that reads chapter requirement IDs from `data/asvs/V*.md` and enforces requirement-by-requirement traceability.

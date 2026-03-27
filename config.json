@@ -1,0 +1,143 @@
+{
+  "module": {
+    "id": "securable-opencode-module",
+    "name": "Securable Engineering Module",
+    "version": "1.0.0",
+    "description": "OpenCode conversion of the securable-claude-plugin using FIASSE/SSEM capabilities",
+    "runtime": "node>=18"
+  },
+  "agentMessageFormat": {
+    "schema": "opencode-agent-message-v1",
+    "roles": ["system", "agent", "user", "tool"],
+    "notes": "Anthropic/Claude role-specific payloads removed. Tool and workflow interactions use JSON messages."
+  },
+  "paths": {
+    "tools": "tools",
+    "workflows": "workflows",
+    "scripts": "scripts"
+  },
+  "tools": [
+    {
+      "id": "fiasse_lookup",
+      "description": "Look up FIASSE/SSEM sections and practical guidance by topic.",
+      "script": "tools/fiasse_lookup.js",
+      "invocation": {
+        "input": {
+          "topic": "string",
+          "maxSections": "number (optional)"
+        },
+        "output": {
+          "matches": "array",
+          "guidance": "string"
+        }
+      },
+      "mappedFrom": {
+        "claudeCommand": "/fiasse-lookup"
+      }
+    },
+    {
+      "id": "securability_review",
+      "description": "Language-aware static SSEM scoring and review package for target code.",
+      "script": "tools/securability_review.js",
+      "invocation": {
+        "input": {
+          "workspaceRoot": "string (optional)",
+          "targetPath": "string (optional, default .)"
+        },
+        "output": {
+          "ssem": "object",
+          "heuristics": "object",
+          "languageBreakdown": "object",
+          "limitations": "array"
+        }
+      },
+      "mappedFrom": {
+        "claudeSkill": "securability-engineering-review",
+        "claudePlay": "plays/code-analysis/securability-engineering-review.md",
+        "claudeCommand": "/securability-review"
+      }
+    },
+    {
+      "id": "secure_generate",
+      "description": "Build a securability-constrained generation contract for implementation tasks.",
+      "script": "tools/secure_generate.js",
+      "invocation": {
+        "input": {
+          "request": "string",
+          "language": "string (optional)",
+          "framework": "string (optional)"
+        },
+        "output": {
+          "generationContract": "object",
+          "handoffPrompt": "string"
+        }
+      },
+      "mappedFrom": {
+        "claudeSkill": "securability-engineering",
+        "claudeCommand": "/secure-generate"
+      }
+    },
+    {
+      "id": "prd_securability_enhance",
+      "description": "Enhance PRD features with ASVS mapping and FIASSE/SSEM notes.",
+      "script": "tools/prd_securability_enhance.js",
+      "invocation": {
+        "input": {
+          "workspaceRoot": "string (optional)",
+          "prdPath": "string",
+          "asvsLevel": "number (1|2|3, optional default 2)",
+          "maxRequirementsPerFeature": "number (optional, default 6)"
+        },
+        "output": {
+          "featuresDetected": "array",
+          "enhancedPrd": "string"
+        }
+      },
+      "mappedFrom": {
+        "claudeSkill": "prd-securability-enhancement",
+        "claudePlay": "plays/requirements-analysis/prd-fiasse-asvs-enhancement.md",
+        "claudeCommand": "/prd-securability-enhance"
+      }
+    }
+  ],
+  "workflows": [
+    {
+      "id": "fiasse-lookup",
+      "file": "workflows/fiasse-lookup.workflow.json",
+      "description": "Topic lookup workflow with validation and bounded matches"
+    },
+    {
+      "id": "securability-review",
+      "file": "workflows/securability-review.workflow.json",
+      "description": "Run SSEM review workflow and return structured score summary"
+    },
+    {
+      "id": "secure-generate",
+      "file": "workflows/secure-generate.workflow.json",
+      "description": "Create generation contract and handoff package for secure code generation"
+    },
+    {
+      "id": "prd-securability-enhance",
+      "file": "workflows/prd-securability-enhance.workflow.json",
+      "description": "Enhance PRD with ASVS and FIASSE/SSEM coverage"
+    }
+  ],
+  "commands": [
+    {
+      "name": "fiasse-lookup",
+      "workflow": "fiasse-lookup"
+    },
+    {
+      "name": "securability-review",
+      "workflow": "securability-review"
+    },
+    {
+      "name": "secure-generate",
+      "workflow": "secure-generate"
+    },
+    {
+      "name": "prd-securability-enhance",
+      "workflow": "prd-securability-enhance"
+    }
+  ]
+}

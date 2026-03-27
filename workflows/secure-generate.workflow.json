@@ -1,0 +1,30 @@
+{
+  "id": "secure-generate",
+  "description": "Convert secure code generation wrapper skill into OpenCode workflow",
+  "steps": [
+    {
+      "id": "require-request",
+      "type": "require_input",
+      "path": "input.request",
+      "prompt": "Provide a code generation request in input.request."
+    },
+    {
+      "id": "call-secure-generate",
+      "type": "tool",
+      "toolId": "secure_generate",
+      "input": {
+        "request": "{{input.request}}",
+        "language": "{{input.language}}",
+        "framework": "{{input.framework}}"
+      }
+    },
+    {
+      "id": "emit-generation-contract",
+      "type": "emit",
+      "output": {
+        "contract": "$steps.call-secure-generate.generationContract",
+        "handoffPrompt": "$steps.call-secure-generate.handoffPrompt"
+      }
+    }
+  ]
+}

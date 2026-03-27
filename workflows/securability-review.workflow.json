@@ -1,0 +1,35 @@
+{
+  "id": "securability-review",
+  "description": "Convert securability engineering review play into OpenCode workflow",
+  "steps": [
+    {
+      "id": "call-review-tool",
+      "type": "tool",
+      "toolId": "securability_review",
+      "input": {
+        "workspaceRoot": "{{input.workspaceRoot}}",
+        "targetPath": "{{input.targetPath}}"
+      }
+    },
+    {
+      "id": "branch-review-ok",
+      "type": "branch",
+      "path": "steps.call-review-tool.ok",
+      "equals": true,
+      "onMismatch": "stop",
+      "reason": "Review tool failed; fix input scope or repository access and retry."
+    },
+    {
+      "id": "emit-report",
+      "type": "emit",
+      "output": {
+        "ssem": "$steps.call-review-tool.ssem",
+        "heuristics": "$steps.call-review-tool.heuristics",
+        "languageBreakdown": "$steps.call-review-tool.languageBreakdown",
+        "analyzer": "$steps.call-review-tool.analyzer",
+        "scope": "$steps.call-review-tool.scope",
+        "limitations": "$steps.call-review-tool.limitations"
+      }
+    }
+  ]
+}
