@@ -3,13 +3,8 @@
     "id": "securable-opencode-module",
     "name": "Securable Engineering Module",
     "version": "1.0.0",
-    "description": "OpenCode conversion of the securable-claude-plugin using FIASSE/SSEM capabilities",
+    "description": "OpenCode module providing FIASSE/SSEM securability review, code generation, and PRD enhancement tools",
     "runtime": "node>=18"
-  },
-  "agentMessageFormat": {
-    "schema": "opencode-agent-message-v1",
-    "roles": ["system", "agent", "user", "tool"],
-    "notes": "Anthropic/Claude role-specific payloads removed. Tool and workflow interactions use JSON messages."
   },
   "paths": {
     "tools": "tools",
@@ -30,9 +25,6 @@
           "matches": "array",
           "guidance": "string"
         }
-      },
-      "mappedFrom": {
-        "claudeCommand": "/fiasse-lookup"
       }
     },
     {
@@ -50,11 +42,6 @@
           "languageBreakdown": "object",
           "limitations": "array"
         }
-      },
-      "mappedFrom": {
-        "claudeSkill": "securability-engineering-review",
-        "claudePlay": "plays/code-analysis/securability-engineering-review.md",
-        "claudeCommand": "/securability-review"
       }
     },
     {
@@ -71,10 +58,6 @@
           "generationContract": "object",
           "handoffPrompt": "string"
         }
-      },
-      "mappedFrom": {
-        "claudeSkill": "securability-engineering",
-        "claudeCommand": "/secure-generate"
       }
     },
     {
@@ -92,11 +75,6 @@
           "featuresDetected": "array",
           "enhancedPrd": "string"
         }
-      },
-      "mappedFrom": {
-        "claudeSkill": "prd-securability-enhancement",
-        "claudePlay": "plays/requirements-analysis/prd-fiasse-asvs-enhancement.md",
-        "claudeCommand": "/prd-securability-enhance"
       }
     }
   ],

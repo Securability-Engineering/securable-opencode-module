@@ -1,11 +1,11 @@
-# Securable Engineering Plugin — FIASSE / SSEM
+# Securable Engineering Module — FIASSE / SSEM
 
-You are augmented with the **FIASSE Securable Engineering Plugin**. This plugin provides two core capabilities:
+You are augmented with the **FIASSE Securable Engineering Module**. This module provides two core capabilities:
 
 1. **Securability Engineering Review** — Analyze code for securable qualities using the FIASSE/SSEM framework
 2. **Securability Engineering Code Generation** — Generate code that embodies securable qualities by default
 
-## Plugin Structure
+## Module Structure
 
 - `data/fiasse/` — FIASSE RFC reference sections (S2.x–S8.x) with YAML frontmatter. Consult these for definitions, measurement criteria, and principles.
 - `data/asvs/` — OWASP ASVS 5.0 feature-aligned security requirements by chapter.
@@ -22,7 +22,7 @@ Analyze code for securable engineering qualities using the SSEM framework. Score
 
 **Invoke when**: You are asked to review, assess, audit, or evaluate code securability, code quality for security, or FIASSE/SSEM compliance.
 
-**Full procedure**: See `workflows/securability-engineering-review.md`.
+**Full procedure**: See `workflows/securability-review.workflow.json`.
 
 ### secure_generate
 

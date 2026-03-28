@@ -3,19 +3,17 @@
 
 const { readJsonFromStdin, writeJson } = require("./lib/common");
 
-function main() {
-  const input = readJsonFromStdin();
+function run(input) {
   const request = String(input.request || "").trim();
 
   if (!request) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "MISSING_REQUEST",
         message: "Provide the code generation request text in the 'request' field."
       }
-    });
-    return;
+    };
   }
 
   const language = String(input.language || "unspecified");
@@ -51,10 +49,6 @@ function main() {
       language,
       framework
     },
-    mappedFrom: {
-      claudeSkill: "skills/securability-engineering/SKILL.md",
-      claudeCommand: "/secure-generate"
-    },
     generationContract: {
       mode: "securability-engineering-wrapper",
       constraints,
@@ -70,7 +64,11 @@ function main() {
     ].join("\n")
   };
 
-  writeJson(output);
+  return output;
 }
 
-main();
+if (require.main === module) {
+  writeJson(run(readJsonFromStdin()));
+}
+
+module.exports = { run };

@@ -4,6 +4,7 @@
 const fs = require("fs");
 const path = require("path");
 const {
+  extractYamlFrontmatter,
   normalizeWorkspaceRoot,
   readJsonFromStdin,
   writeJson
@@ -15,32 +16,6 @@ function tokenize(text) {
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((part) => part.length > 2);
-}
-
-function parseFrontmatter(raw) {
-  if (!raw.startsWith("---\n")) {
-    return {};
-  }
-
-  const end = raw.indexOf("\n---\n", 4);
-  if (end === -1) {
-    return {};
-  }
-
-  const frontmatter = raw.slice(4, end).split(/\r?\n/);
-  const data = {};
-
-  for (const line of frontmatter) {
-    const idx = line.indexOf(":");
-    if (idx <= 0) {
-      continue;
-    }
-    const key = line.slice(0, idx).trim();
-    const value = line.slice(idx + 1).trim().replace(/^"|"$/g, "");
-    data[key] = value;
-  }
-
-  return data;
 }
 
 function parseAsvsCatalog(workspaceRoot) {
@@ -57,7 +32,7 @@ function parseAsvsCatalog(workspaceRoot) {
 
   for (const filePath of files) {
     const raw = fs.readFileSync(filePath, "utf8");
-    const frontmatter = parseFrontmatter(raw);
+    const { frontmatter } = extractYamlFrontmatter(raw);
     const chapter = frontmatter.asvs_chapter || path.basename(filePath, ".md");
     const tableRowRegex = /\|\s*\*\*?(\d+\.\d+\.\d+)\*\*?\s*\|\s*(.*?)\s*\|\s*(\d)\s*\|/g;
     let match = null;
@@ -200,8 +175,7 @@ function renderFeatureSection(featureTitle, asvsLevel, families, requirements) {
   ].join("\n");
 }
 
-function main() {
-  const input = readJsonFromStdin();
+function run(input) {
   const workspaceRoot = normalizeWorkspaceRoot(input.workspaceRoot);
   const prdPath = input.prdPath ? path.resolve(workspaceRoot, input.prdPath) : null;
   const maxRequirementsPerFeature = Number.isFinite(Number(input.maxRequirementsPerFeature))
@@ -209,26 +183,24 @@ function main() {
     : 6;
 
   if (!prdPath || !fs.existsSync(prdPath)) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "MISSING_PRD",
         message: "Provide an existing PRD path via 'prdPath'."
       }
-    });
-    return;
+    };
   }
 
   const asvsLevel = Number(input.asvsLevel || 2);
   if (![1, 2, 3].includes(asvsLevel)) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "INVALID_ASVS_LEVEL",
         message: "asvsLevel must be 1, 2, or 3."
       }
-    });
-    return;
+    };
   }
 
   const prdText = fs.readFileSync(prdPath, "utf8");
@@ -236,25 +208,23 @@ function main() {
   const asvsCatalog = parseAsvsCatalog(workspaceRoot);
 
   if (features.length === 0) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "NO_FEATURES_FOUND",
         message: "No feature-like entries were found. Add headings or bullet features in the PRD."
       }
-    });
-    return;
+    };
   }
 
   if (asvsCatalog.length === 0) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "ASVS_CATALOG_EMPTY",
         message: "No ASVS section files were parsed from data/asvs."
       }
-    });
-    return;
+    };
   }
 
   const featureMappings = features.map((feature, index) => {
@@ -307,19 +277,18 @@ function main() {
     ""
   ].join("\n");
 
-  writeJson({
+  return {
     ok: true,
-    mappedFrom: {
-      claudeSkill: "skills/prd-securability-enhancement/SKILL.md",
-      claudePlay: "plays/requirements-analysis/prd-fiasse-asvs-enhancement.md",
-      claudeCommand: "/prd-securability-enhance"
-    },
     prdPath,
     asvsLevel,
     asvsCatalogSize: asvsCatalog.length,
     featuresDetected: featureMappings,
     enhancedPrd: enhancedBody
-  });
+  };
 }
 
-main();
+if (require.main === module) {
+  writeJson(run(readJsonFromStdin()));
+}
+
+module.exports = { run };

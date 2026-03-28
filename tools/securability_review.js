@@ -154,20 +154,18 @@ function grade(score) {
   return "Poor";
 }
 
-function main() {
-  const input = readJsonFromStdin();
+function run(input) {
   const workspaceRoot = normalizeWorkspaceRoot(input.workspaceRoot);
   const target = path.resolve(workspaceRoot, input.targetPath || ".");
 
   if (!fs.existsSync(target)) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "TARGET_NOT_FOUND",
         message: `Target path does not exist: ${target}`
       }
-    });
-    return;
+    };
   }
 
   const stat = fs.statSync(target);
@@ -176,14 +174,13 @@ function main() {
     : (isCodeFile(target) ? [target] : []);
 
   if (files.length === 0) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "NO_CODE_FILES",
         message: "No supported code files found in the target scope."
       }
-    });
-    return;
+    };
   }
 
   const fileLineCounts = [];
@@ -290,13 +287,8 @@ function main() {
   const pillars = scoreFromHeuristics(stats);
   const overall = (pillars.maintainability.score + pillars.trustworthiness.score + pillars.reliability.score) / 3;
 
-  writeJson({
+  return {
     ok: true,
-    mappedFrom: {
-      claudeSkill: "skills/securability-engineering-review/SKILL.md",
-      claudePlay: "plays/code-analysis/securability-engineering-review.md",
-      claudeCommand: "/securability-review"
-    },
     scope: {
       workspaceRoot,
       targetPath: target,
@@ -340,7 +332,11 @@ function main() {
       "Scores are heuristic and should be validated with manual engineering review.",
       "This tool estimates attribute posture from static text signals and code shape."
     ]
-  });
+  };
 }
 
-main();
+if (require.main === module) {
+  writeJson(run(readJsonFromStdin()));
+}
+
+module.exports = { run };

@@ -3,12 +3,11 @@
   "instructions": "./instructions.md",
   "mcpServers": {
     "securable": {
-      "command": "python",
-      "args": ["./tools/mcp_server.py"],
+      "command": "node",
+      "args": ["./tools/mcp_server.js"],
       "env": {
         "SECURABLE_DATA_DIR": "./data",
-        "SECURABLE_TEMPLATES_DIR": "./templates",
-        "SECURABLE_WORKFLOWS_DIR": "./workflows"
+        "SECURABLE_TEMPLATES_DIR": "./templates"
       }
     }
   }

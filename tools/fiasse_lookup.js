@@ -9,32 +9,29 @@ const {
   writeJson
 } = require("./lib/common");
 
-function main() {
-  const input = readJsonFromStdin();
+function run(input) {
   const topic = String(input.topic || "").trim();
   const maxSections = Number.isFinite(input.maxSections) ? Number(input.maxSections) : 5;
 
   if (!topic) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "MISSING_TOPIC",
         message: "Provide a topic, section id, or keyword (for example: integrity, trust boundaries, S3.2.2)."
       }
-    });
-    return;
+    };
   }
 
-  const dataDir = path.resolve(__dirname, "..", "..", "data", "fiasse");
+  const dataDir = path.resolve(__dirname, "..", "data", "fiasse");
   if (!fs.existsSync(dataDir)) {
-    writeJson({
+    return {
       ok: false,
       error: {
         code: "FIASSE_DATA_NOT_FOUND",
         message: `Expected FIASSE data directory at ${dataDir}`
       }
-    });
-    return;
+    };
   }
 
   const query = topic.toLowerCase();
@@ -70,13 +67,12 @@ function main() {
     .slice(0, Math.max(1, maxSections));
 
   if (sorted.length === 0) {
-    writeJson({
+    return {
       ok: true,
       topic,
       matches: [],
       guidance: "No direct section match. Try a broader keyword such as integrity, resilience, transparency, or a section id like S3.2.3."
-    });
-    return;
+    };
   }
 
   const guidance = [
@@ -84,12 +80,18 @@ function main() {
     "Use the listed sections as primary references and apply trust-boundary discipline plus transparency controls in implementation and review outputs."
   ].join(" ");
 
-  writeJson({
+  return {
     ok: true,
     topic,
     matches: sorted,
     guidance
-  });
+  };
 }
 
-main();
+if (require.main === module) {
+  writeJson(run(readJsonFromStdin()));
+}
+
+module.exports = { run };
+
+module.exports = { run };

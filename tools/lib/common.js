@@ -24,7 +24,7 @@ function normalizeWorkspaceRoot(explicitRoot) {
   if (explicitRoot && explicitRoot.trim()) {
     return path.resolve(explicitRoot);
   }
-  return path.resolve(__dirname, "..", "..", "..");
+  return path.resolve(__dirname, "..", "..");
 }
 
 function readFileIfExists(filePath) {

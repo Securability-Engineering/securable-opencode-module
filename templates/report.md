@@ -3,7 +3,7 @@
 ## Report: [Target Name]
 
 **Date**: YYYY-MM-DD
-**Assessor**: Claude Code (agent-security-playbook)
+**Assessor**: Securable Engineering Module
 **Scope**: [What was assessed — repo, service, architecture, agent config]
 **Skills Used**: [List of skills invoked]
 
