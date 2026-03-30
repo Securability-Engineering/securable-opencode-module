@@ -59,7 +59,7 @@ Run these from the OpenCode prompt:
 | Command | Description |
 |---------|-------------|
 | `/securability-review` | Run SSEM analysis on the current workspace |
-| `/secure-generate` | Generate code with securability constraints |
+| `/secure-generate` | Run end-to-end securable generation: PRD enhancement, FIASSE-guided implementation, review execution, and final scoring |
 | `/fiasse-lookup` | Look up FIASSE/SSEM reference material |
 | `/prd-enhance` | Annotate a PRD with ASVS + FIASSE/SSEM |
 
